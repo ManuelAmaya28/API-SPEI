@@ -1,0 +1,206 @@
+{
+  "info": {
+    "_postman_id": "spei-inbound-api-001",
+    "name": "SPEI Inbound API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Login Keycloak - Get Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.collectionVariables.set(\"access_token\", pm.response.json().access_token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/x-www-form-urlencoded"}
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {"key": "grant_type",    "value": "password",          "type": "text"},
+            {"key": "client_id",     "value": "candidate-api",     "type": "text"},
+            {"key": "client_secret", "value": "candidate-secret",  "type": "text"},
+            {"key": "username",      "value": "candidato01",       "type": "text"},
+            {"key": "password",      "value": "Candidato123!",     "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "https://auth.lab.dnu.mx/realms/fineract_keycloak/protocol/openid-connect/token",
+          "protocol": "https",
+          "host": ["auth", "lab", "dnu", "mx"],
+          "path": ["realms", "fineract_keycloak", "protocol", "openid-connect", "token"]
+        }
+      }
+    },
+    {
+      "name": "2. POST SPEI Inbound",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "pm.collectionVariables.set(\"spei_id\", json.id);",
+              "pm.collectionVariables.set(\"savings_id\", json.fineractSavingsId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization",  "value": "Bearer {{access_token}}"},
+          {"key": "Content-Type",   "value": "application/json"},
+          {"key": "Idempotency-Key","value": "{{idempotency_key}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRastreo\": \"SPEI20261001120000\",\n  \"monto\": 1000.00,\n  \"cuentaBeneficiaria\": \"646180909697341557\",\n  \"concepto\": \"Abono cliente demo\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/spei/inbound",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "spei", "inbound"]
+        }
+      }
+    },
+    {
+      "name": "3. POST SPEI - Idempotent Repeat (mismo Idempotency-Key -> 200)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization",  "value": "Bearer {{access_token}}"},
+          {"key": "Content-Type",   "value": "application/json"},
+          {"key": "Idempotency-Key","value": "{{idempotency_key}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRastreo\": \"SPEI20261001120000\",\n  \"monto\": 1000.00,\n  \"cuentaBeneficiaria\": \"646180909697341557\",\n  \"concepto\": \"Abono cliente demo\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/spei/inbound",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "spei", "inbound"]
+        }
+      }
+    },
+    {
+      "name": "4. POST SPEI - Sin Token (-> 401)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRastreo\": \"SPEI20261001120000\",\n  \"monto\": 1000.00,\n  \"cuentaBeneficiaria\": \"646180909697341557\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/spei/inbound",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "spei", "inbound"]
+        }
+      }
+    },
+    {
+      "name": "5. POST SPEI - Body Invalido (-> 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{access_token}}"},
+          {"key": "Content-Type",  "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveRastreo\": \"\",\n  \"monto\": -100,\n  \"cuentaBeneficiaria\": \"000000000000000000\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/v1/spei/inbound",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "spei", "inbound"]
+        }
+      }
+    },
+    {
+      "name": "6. GET SPEI Order by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{access_token}}"}
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/spei/{{spei_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "v1", "spei", "{{spei_id}}"]
+        }
+      }
+    },
+    {
+      "name": "7. GET Fineract - Movimientos de la cuenta",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization",              "value": "Basic bWlmb3M6cGFzc3dvcmQ="},
+          {"key": "Fineract-Platform-TenantId", "value": "default"}
+        ],
+        "url": {
+          "raw": "https://fineract.lab.dnu.mx/fineract-provider/api/v1/savingsaccounts/{{savings_id}}?associations=transactions",
+          "protocol": "https",
+          "host": ["fineract", "lab", "dnu", "mx"],
+          "path": ["fineract-provider", "api", "v1", "savingsaccounts", "{{savings_id}}"],
+          "query": [{"key": "associations", "value": "transactions"}]
+        }
+      }
+    },
+    {
+      "name": "8. GET Fineract - Journal Entries (asientos contables)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization",              "value": "Basic bWlmb3M6cGFzc3dvcmQ="},
+          {"key": "Fineract-Platform-TenantId", "value": "default"}
+        ],
+        "url": {
+          "raw": "https://fineract.lab.dnu.mx/fineract-provider/api/v1/journalentries?savingsId={{savings_id}}&transactionDetails=true",
+          "protocol": "https",
+          "host": ["fineract", "lab", "dnu", "mx"],
+          "path": ["fineract-provider", "api", "v1", "journalentries"],
+          "query": [
+            {"key": "savingsId",          "value": "{{savings_id}}"},
+            {"key": "transactionDetails", "value": "true"}
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {"key": "access_token",    "value": "",  "type": "string"},
+    {"key": "spei_id",         "value": "",  "type": "string"},
+    {"key": "idempotency_key", "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890", "type": "string"},
+    {"key": "savings_id",      "value": "",  "type": "string"}
+  ]
+}

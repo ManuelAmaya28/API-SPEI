@@ -1,0 +1,43 @@
+# ─── Maven build output ───────────────────────────────────────────────────
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ─── Compiled class files ─────────────────────────────────────────────────
+*.class
+
+# ─── Package / distribution files ────────────────────────────────────────
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ─── H2 durable file database (local dev data) ────────────────────────────
+data/
+
+# ─── Secrets / environment ────────────────────────────────────────────────
+.env
+.env.*
+*.env
+
+# ─── IDE files ────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+*.swp
+*.swo
+
+# ─── OS generated ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Spring Boot logs ─────────────────────────────────────────────────────
+*.log
+logs/
+.kiro/

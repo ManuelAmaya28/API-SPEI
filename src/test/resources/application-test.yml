@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  sql:
+    init:
+      mode: always
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:${wiremock.server.port}/realms/fineract_keycloak
+
+spei:
+  fineract:
+    base-url: http://localhost:${wiremock.server.port}/fineract-provider/api/v1
+    username: mifos
+    password: password
+    tenant-id: default
+  spread-rate: 0.005
+  commission: 8.00
+  payment-type-id: 3
