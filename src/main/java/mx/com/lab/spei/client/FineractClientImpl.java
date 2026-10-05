@@ -91,8 +91,8 @@ public class FineractClientImpl implements FineractClient {
                 .findFirst()
                 .map(account -> FineractAccountInfo.builder()
                         .savingsId(account.getId())
-                        .clientId(account.getClientId().getId())
-                        .clientName(account.getClientId().getDisplayName())
+                        .clientId(account.getClientId())
+                        .clientName("UNKNOWN")
                         .build())
                 .orElseThrow(() -> {
                     // At least one account exists but none is active — report the first one's status
